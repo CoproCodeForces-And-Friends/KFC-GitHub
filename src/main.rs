@@ -3,7 +3,9 @@ extern crate hyper;
 extern crate tokio_core;
 extern crate failure;
 extern crate hyper_tls;
+extern crate tokio_io;
 
+mod mock_server;
 use std::io::{self, Write};
 use futures::{Future, Stream};
 use hyper::{Client, Method, Request};
