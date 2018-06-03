@@ -1,39 +1,73 @@
-extern crate futures;
+extern crate tokio;
 extern crate hyper;
-extern crate tokio_core;
 extern crate failure;
-extern crate hyper_tls;
-extern crate tokio_io;
+extern crate futures;
 
-mod mock_server;
-use std::io::{self, Write};
-use futures::{Future, Stream};
-use hyper::{Client, Method, Request};
-use hyper::header::UserAgent;
-use tokio_core::reactor::Core;
-use hyper_tls::HttpsConnector;
+use futures::future::{ok, err, result};
+use hyper::service::Service;
+use hyper::{Body, Request, Response, StatusCode};
+use tokio::runtime::current_thread::Runtime;
 
-use failure::Error;
+use hyper::rt::{Future, run};
+use futures::Stream;
 
-fn main() -> Result<(), Error> {
-    let mut core = Core::new()?;
-    let handle = core.handle();
-    let client = Client::configure()
-        .connector(HttpsConnector::new(4, &handle)?)
-        .build(&handle);
+struct Test;
 
-    let uri = "https://api.github.com/repos/CoproCodeForces-And-Friends/KFC-GitHub/issues".parse()?;
-    let mut req: Request = Request::new(Method::Get, uri);
-    req.headers_mut().set(UserAgent::new("curl/7.43.0"));
-    let work = client.request(req).and_then(|res| {
-        println!("Response: {}", res.status());
+impl Test {
+    pub fn new() -> Self {
+        Test
+    }
+}
 
-        res.body().for_each(|chunk| {
-            io::stdout()
-                .write_all(&chunk)
-                .map_err(From::from)
-        })
-    });
-    let res = core.run(work)?;
-    Ok(res)
+impl Service for Test {
+    type ReqBody = Body;
+    type ResBody = Body;
+    type Error = hyper::Error;
+    type Future = Box<Future<Item = Response<Self::ResBody>, Error = Self::Error>>;
+    fn call(&mut self, req: Request<Self::ReqBody>) -> Self::Future {
+        let res = Response::builder()
+            .status(StatusCode::OK)
+            .body(Body::from("Hah haaay"))
+            .unwrap();
+
+        Box::new(ok(res))
+    }
+}
+
+fn main() {
+    println!("Lel");
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn sts(s: hyper::Body) -> String {
+        let body = s.map_err(|_| ()).fold(vec![], |mut acc, chunk| {
+            acc.extend_from_slice(&chunk);
+            Ok(acc)
+        }).and_then(|v| String::from_utf8(v).map_err(|_| ()));
+        body.wait().unwrap()
+    }
+
+    #[test]
+    fn top_test() {
+        let mut server = Test::new();
+        let req = Request::builder()
+            .uri("http://fominok.ru")
+            .header("User-Agent", "my-agent/1.0")
+            .body(Body::from(""))
+            .unwrap();
+
+        let good = Response::builder()
+            .status(StatusCode::OK)
+            .body(Body::from("Hah haaay"))
+            .unwrap();
+
+
+        let mut rt = Runtime::new().unwrap();
+        let resp = server.call(req);
+        let r = rt.block_on(resp).unwrap();
+        assert_eq!(sts(good.into_body()), sts(r.into_body()));
+    }
 }

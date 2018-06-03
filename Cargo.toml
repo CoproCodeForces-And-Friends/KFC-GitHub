@@ -4,9 +4,10 @@ version = "0.1.0"
 authors = ["Evgeny Fomin <fominok@hotmail.com>"]
 
 [dependencies]
-hyper = "0.11.27"
+hyper = "0.12.0"
 futures = "0.1"
+tokio = "0.1.6"
 tokio-core = "0.1"
 failure = "0.1.1"
-hyper-tls = "0.1.3"
+hyper-tls = "0.2.0"
 tokio-io = "0.1"
