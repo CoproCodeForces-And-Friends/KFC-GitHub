@@ -2,6 +2,58 @@ extern crate serde_json;
 extern crate hyper;
 extern crate failure;
 
+#[allow(non_snake_case)]
+#[derive(Serialize)]
+struct KfcTask {
+    id: i32,
+    name: String,
+    description: String,
+    creationDate: String,
+    status: String,
+    creatorId: i32,
+    handlerId: i32,
+    due: String,
+    label: Vec<String>,
+    projectId: String,
+}
+
+// Not sure if required
+#[allow(dead_code)]
+#[allow(non_snake_case)]
+#[derive(Serialize)]
+struct KfcRelatedTask {
+    id: i32,
+    typee: String,
+}
+
+// Not sure if required
+#[allow(dead_code)]
+#[allow(non_snake_case)]
+#[derive(Serialize)]
+struct KfcActivity {
+    memberId: i32,
+    typee: String,
+    date: String,
+    oldValue: String,
+    newValue: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize)]
+struct KfcOrganization {
+    id: i32,
+    name: String,
+    description: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize)]
+struct KfcParticipant {
+    id: i32,
+    name: String,
+    email: String,
+}
+
 #[cfg(test)]
 mod test {
     use failure::Error;
