@@ -4,8 +4,7 @@ extern crate failure;
 extern crate futures;
 
 use futures::future::ok;
-use futures::{Future,Stream};
-use tokio::runtime::current_thread::Runtime;
+use futures::Future;
 
 use hyper::service::Service;
 use hyper::{Method, Body, Request, Response, StatusCode};
@@ -62,6 +61,8 @@ impl Service for WebhookService {
 #[cfg(test)]
 mod test {
     use super::*;
+    use tokio::runtime::current_thread::Runtime;
+    use futures::Stream;
 
     fn sts(s: hyper::Body) -> String {
         let body = s.map_err(|_| ()).fold(vec![], |mut acc, chunk| {
