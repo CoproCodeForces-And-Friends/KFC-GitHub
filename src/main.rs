@@ -1,5 +1,5 @@
-extern crate tokio;
 extern crate hyper;
+extern crate tokio;
 #[macro_use]
 extern crate failure;
 extern crate futures;
@@ -8,9 +8,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-mod webhook;
 mod conv;
+mod webhook;
 
-fn main() {
-
-}
+fn main() {}

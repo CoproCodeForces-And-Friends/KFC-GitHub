@@ -1,53 +1,55 @@
-extern crate serde_json;
-extern crate hyper;
 extern crate failure;
+extern crate hyper;
+extern crate serde_json;
 
-#[allow(non_snake_case)]
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct KfcTask {
     id: i32,
     name: String,
     description: String,
-    creationDate: String,
+    creation_date: String,
     status: String,
-    creatorId: i32,
-    handlerId: i32,
+    creator_id: i32,
+    handler_id: i32,
     due: String,
     label: Vec<String>,
-    projectId: String,
+    project_id: String,
 }
 
 // Not sure if required
 #[allow(dead_code)]
-#[allow(non_snake_case)]
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct KfcRelatedTask {
     id: i32,
-    typee: String,
+    #[serde(rename = "type")]
+    type_: String,
 }
 
 // Not sure if required
 #[allow(dead_code)]
-#[allow(non_snake_case)]
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct KfcActivity {
-    memberId: i32,
-    typee: String,
+    member_id: i32,
+    #[serde(rename = "type")]
+    type_: String,
     date: String,
-    oldValue: String,
-    newValue: String,
+    old_value: String,
+    new_value: String,
 }
 
-#[allow(non_snake_case)]
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct KfcOrganization {
     id: i32,
     name: String,
     description: String,
 }
 
-#[allow(non_snake_case)]
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct KfcParticipant {
     id: i32,
     name: String,
@@ -57,8 +59,8 @@ struct KfcParticipant {
 #[cfg(test)]
 mod test {
     use failure::Error;
-    use std::fs::File;
     use serde_json as json;
+    use std::fs::File;
 
     #[derive(Fail, Debug)]
     enum FileJsonError {
@@ -90,6 +92,10 @@ mod test {
     #[test]
     fn test_gh_issue_extacted() {
         let val = json_from_file("resources/label_add.json").unwrap();
-        assert!(val.pointer("/issue/id").map(|x| x.is_number()).unwrap_or_default());
+        assert!(
+            val.pointer("/issue/id")
+                .map(|x| x.is_number())
+                .unwrap_or_default()
+        );
     }
 }

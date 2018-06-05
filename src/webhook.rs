@@ -1,13 +1,13 @@
-extern crate tokio;
-extern crate hyper;
 extern crate failure;
 extern crate futures;
+extern crate hyper;
+extern crate tokio;
 
 use futures::future::ok;
 use futures::Future;
 
 use hyper::service::Service;
-use hyper::{Method, Body, Request, Response, StatusCode};
+use hyper::{Body, Method, Request, Response, StatusCode};
 
 struct WebhookService;
 
@@ -18,15 +18,15 @@ impl WebhookService {
 }
 
 fn check_agent<T>(req: &Request<T>) -> bool {
-    req.headers().get("User-Agent")
-        .map_or(false, |hv| {
-            if let Ok(s) = hv.to_str() {
-                s.split("/").next()
-                    .map_or(false, |x| x == "GitHub-Hookshot")
-            } else {
-                false
-            }
-        })
+    req.headers().get("User-Agent").map_or(false, |hv| {
+        if let Ok(s) = hv.to_str() {
+            s.split("/")
+                .next()
+                .map_or(false, |x| x == "GitHub-Hookshot")
+        } else {
+            false
+        }
+    })
 }
 
 impl Service for WebhookService {
@@ -45,7 +45,6 @@ impl Service for WebhookService {
                 } else {
                     *res.status_mut() = StatusCode::FORBIDDEN;
                 }
-
             }
             (&Method::GET, "/simple") => {
                 *res.body_mut() = Body::from("{}");
@@ -61,14 +60,16 @@ impl Service for WebhookService {
 #[cfg(test)]
 mod test {
     use super::*;
-    use tokio::runtime::current_thread::Runtime;
     use futures::Stream;
+    use tokio::runtime::current_thread::Runtime;
 
     fn sts(s: hyper::Body) -> String {
-        let body = s.map_err(|_| ()).fold(vec![], |mut acc, chunk| {
-            acc.extend_from_slice(&chunk);
-            Ok(acc)
-        }).and_then(|v| String::from_utf8(v).map_err(|_| ()));
+        let body = s.map_err(|_| ())
+            .fold(vec![], |mut acc, chunk| {
+                acc.extend_from_slice(&chunk);
+                Ok(acc)
+            })
+            .and_then(|v| String::from_utf8(v).map_err(|_| ()));
         body.wait().unwrap()
     }
 
