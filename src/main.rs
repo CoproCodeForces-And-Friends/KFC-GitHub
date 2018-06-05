@@ -1,8 +1,8 @@
 extern crate tokio;
 extern crate hyper;
+#[macro_use]
 extern crate failure;
 extern crate futures;
-#[macro_use]
 extern crate serde_json;
 
 mod webhook;
