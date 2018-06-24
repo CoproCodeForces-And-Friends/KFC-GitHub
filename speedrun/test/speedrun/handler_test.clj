@@ -3,6 +3,7 @@
             [ring.mock.request :as mock]
             [speedrun.handler :as h]
             [cheshire.core :as json]
+            [org.httpkit.fake :refer [with-fake-http]]
             [speedrun.converters :as conv]))
 
 (deftest test-routes
@@ -14,10 +15,15 @@
     (let [response (h/app (mock/request :get "/invalid"))]
       (is (= (:status response) 404)))))
 
+(def filename "test/example.json")
+
 (def example-wh
-  (json/parse-stream
-   (clojure.java.io/reader "test/example.json")
-   true))
+  (json/parse-stream (clojure.java.io/reader filename) true))
+
+(def req
+  (-> (mock/request :post "/webhook")
+      (mock/body (slurp filename))
+      (mock/content-type "application/json")))
 
 (deftest test-converters
   (testing "task converter"
@@ -55,3 +61,23 @@
                 :name "fominok"
                 :url "https://github.com/fominok"}]
       (is (= part (conv/participant example-wh))))))
+
+(def good-storage (read-string (slurp "test/good_storage.edn")))
+
+(deftest stateful-tests
+  (def mock-storage (atom {}))
+  (defn put [k]
+    (fn [_ {:keys [body]} _]
+      (swap! mock-storage update (keyword k) (fnil conj []) (json/decode body true))))
+  (defn by-type [t] [(str "/storage/gh/" t) (put t)])
+
+  (testing "Storage received all data converted from webhook"
+
+    (with-fake-http (concat
+                     (by-type "organization")
+                     (by-type "project")
+                     (by-type "user")
+                     (by-type "task"))
+      (h/app req)))
+
+  (is (= @mock-storage good-storage)))
